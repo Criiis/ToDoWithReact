@@ -6,7 +6,7 @@ body {
 	color: white;
 	font-family: 'Roboto Mono', monospace;
 	background: $gradientColor1;
-	min-width: 100vw;
+	min-width: 100%;
     min-height: 100vh;
     background: linear-gradient(125deg, rgba(0,0,0,1) 33%, rgba(62,60,204,1) 33%, rgba(237,44,44,1) 75%, rgba(0,0,0,1) 75%);
 }

@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useState, useRef, useEffect} from "react";
 import styled from 'styled-components';
 import { FaRegEdit, FaRegTrashAlt } from 'react-icons/fa';
 
@@ -101,7 +101,7 @@ const UlContainer = styled.ul`
             display: block;
         }
     }
-  .item {
+.item {
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -123,7 +123,7 @@ const UlContainer = styled.ul`
             outline: 0;
             border-bottom: 1px solid white;
         }
-        &.complete {
+        &.completed {
             text-decoration: line-through;
             opacity: 0.5;
             + .edit {
@@ -131,7 +131,7 @@ const UlContainer = styled.ul`
                 opacity: 0.5;
                 
             }
-          }
+        }
     }
     .edit,
     .trash {
@@ -140,129 +140,74 @@ const UlContainer = styled.ul`
             pointer-events: none;
         }
     }
-  }
+}
 `
 
 
 
 
 
-export default function ToDoComponent() {
-    let listObject = [];
+export default function ToDoComponent({getLocalStorageArray}) {
+    const [toDoListLocal, setToDoListLocal] = useState([...getLocalStorageArray]);
+    const inputValueRef = useRef();
 
-    let getLocalArray = JSON.parse(localStorage.getItem('itemsToDo'));
-    const [transformArrayInJson, setTransformArrayInJson] = useState(getLocalArray);
+    //create a unique number for each task
+    let d = new Date();
+    let n = d.getTime();
 
 
-    //general functions
-    function updateLocalStorage(item) {
-        localStorage.setItem('itemsToDo', JSON.stringify(item));
-    }
+    //refresh local storage
+    useEffect(() => {
+        localStorage.setItem('myData', JSON.stringify(toDoListLocal));
+    }, [toDoListLocal])
+
 
     //add item to list function
-    function addItemToList(value) {
-        let input = document.getElementById(value);
-        let inputValue = input.value;
-        if( inputValue !== '' ) {
-            listObject = [{item: `${inputValue}`, status: "uncomplete" }, ...listObject]
-            updateLocalStorage(listObject);
-            setTransformArrayInJson(listObject);
-            input.value = '';
-            document.body.querySelector('.error').classList.remove('open');
-        } else {
-            document.body.querySelector('.error').classList.add('open');
+    function addItemToList() {
+        const inputValue = inputValueRef.current.value;
+        if (inputValue !== '') {
+            setToDoListLocal(oldArray => [{item: `${inputValue}`, status: "uncompleted", date: `${n}` }, ...oldArray]);
+            inputValueRef.current.value = '';
         }
     }
 
 
-
-    if (localStorage.getItem("itemsToDo") === null) {
-        localStorage.setItem('itemsToDo', JSON.stringify(listObject));
-    } else {
-        listObject = JSON.parse(localStorage.getItem('itemsToDo'));
-    }
-
-
-    // add value to array and DOM by clicking
-    function addValueToObject(e) {
-        e.preventDefault();
-        addItemToList("to-do");
-    }
-
-    function itemFuncionality(e) {
+    //delete Task
+    function deleteTask(e) {
         let clickTarget = e.target;
+        let parentID = clickTarget.parentNode.id;
+        let findTaskNumberID = toDoListLocal.findIndex(x => x.date === parentID);
 
-        //create an array with the div with class item
-        let itemContainer = clickTarget.closest('.item');
-        let nodes = Array.from( itemContainer.closest('ul').querySelectorAll('div.item') );
-        let index = nodes.indexOf( itemContainer );
+        //very important use 'set' function to update the array
+        let test = [...toDoListLocal]
+        test.splice(findTaskNumberID, 1)
+        setToDoListLocal(test)
 
-
-
-        if(clickTarget.className === 'trash') {
-            //delete the item
-            listObject.splice(index, 1);
-            updateLocalStorage(listObject);
-            setTransformArrayInJson(listObject);
-
-        } else if (clickTarget.tagName === 'LI'){
-            //change status to complete or uncompleted
-            if(clickTarget.className === 'uncomplete' && clickTarget.getAttribute('contentEditable') !== 'true') {
-                clickTarget.classList.remove('uncomplete');
-                clickTarget.classList.add('complete');
-                listObject[index].status = 'complete';
-                updateLocalStorage(listObject);
-            } else if (clickTarget.className === 'complete' && clickTarget.getAttribute('contentEditable') !== 'true') {
-                clickTarget.classList.remove('complete');
-                clickTarget.classList.add('uncomplete');
-                listObject[index].status = 'uncomplete';
-                updateLocalStorage(listObject);
-            }
-
-        } else if (clickTarget.className === 'edit'){
-            //edit the item
-            if (clickTarget.id !== 'editable') {
-                clickTarget.setAttribute("id", "editable");
-                clickTarget.previousSibling.contentEditable = "true";
-                clickTarget.previousSibling.classList.add('editable');
-                clickTarget.previousSibling.focus();
-            } else if ( clickTarget.id === 'editable' ) {
-                clickTarget.removeAttribute("id");
-                clickTarget.previousSibling.contentEditable = "false";
-                clickTarget.previousSibling.classList.remove('editable');
-                listObject[index].item = clickTarget.previousSibling.innerHTML;
-                updateLocalStorage(listObject);
-            }
-        }
-    }
+    } 
 
 
-    window.addEventListener('keydown', (e) => {
-        if (e.keyCode === 13) {
-            e.preventDefault();
-        } 
-    });
 
 
     return (
         <>
+
             <Wrap>
                 <div className='inner'>
-                    <form>
-                        <input type="text" id="to-do" name="toDo" placeholder="Add new task"/>
-                        <button onClick={addValueToObject} className="add-btn btn btn-primary" type="button">+</button>
-                    </form>
+                <form>
+                    <input type="text" ref={inputValueRef} name="toDo" placeholder="Add new task"/>
+                    <button onClick={addItemToList} className="add-btn btn btn-primary" type="button">+</button>
+                </form>
 
                     <UlContainer className="to-do-list">
                         <span className="error">*Please fill the text box above.</span>
                     {
-                        transformArrayInJson?.map((item, index) => (
-                            <div onClick={itemFuncionality} className="item" key={index}>
+                        toDoListLocal?.map((item) => (
+                            <div className="item" key={item.date} id={item.date}>
                                 <li className={item.status}>{item.item}</li>
                                 <span className="edit">
                                     <FaRegEdit/>
                                 </span>
-                                <span className="trash">
+                                <span onClick={deleteTask} className="trash">
                                     <FaRegTrashAlt/>
                                 </span>
                             </div>

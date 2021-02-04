@@ -6,9 +6,21 @@ import ToDoComponent from './components/Todo';
 
 
 function App() {
+
+
+
+  let getLocalArray;
+
+  if (localStorage.getItem("myData") === null) {
+    getLocalArray = []
+  } else {
+    getLocalArray = JSON.parse(localStorage.getItem('myData'));
+  }
+
+
   return (
   <>
-    <ToDoComponent/>
+    <ToDoComponent getLocalStorageArray={getLocalArray}/>
   </>
   );
 }
