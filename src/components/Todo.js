@@ -111,6 +111,24 @@ const UlContainer = styled.ul`
     box-shadow: 0px 0px 5px -1px #000000;
     padding: 10px;
     border-radius: 5px;
+
+    input[type=checkbox] {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background: transparent;
+        border-radius: 50%;
+        margin: 0;
+        border: 1px solid white;
+        opacity: 0.5;
+        &:focus {
+            border: 1px solid white;
+            outline: 0;
+        }
+        &:checked {
+            background: white;
+        }
+    }
     li {
         width: 78%;
         font-size: 16px;
@@ -214,10 +232,12 @@ export default function ToDoComponent({getLocalStorageArray}) {
 
         if (itemTask.contentEditable === 'false') {
             itemTask.contentEditable = true;
+            itemTask.classList.add('editable');
             itemTask.focus();
         } else if (itemTask.contentEditable === 'true'){
             itemTask.contentEditable = false;
             newValue= itemTask.innerHTML;
+            itemTask.classList.remove('editable');
 
             test[findTaskNumberID].item = newValue;
             setToDoListLocal(test);
