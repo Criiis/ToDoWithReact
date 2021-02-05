@@ -207,11 +207,11 @@ export default function ToDoComponent({getLocalStorageArray}) {
     function editTask(e) {
         let clickTarget = e.target;
         let itemTask = clickTarget.previousSibling;
-        let findTaskNumberID = toDoListLocal.findIndex(x => x.item === itemTask.id);
+        let parentID = clickTarget.parentNode.id;
+        let findTaskNumberID = toDoListLocal.findIndex(x => x.date === parentID);
         let test = [...toDoListLocal];
         let newValue;
 
-        console.log(itemTask.contentEditable);
         if (itemTask.contentEditable === 'false') {
             itemTask.contentEditable = true;
             itemTask.focus();
