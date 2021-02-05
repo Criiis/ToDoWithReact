@@ -9,9 +9,7 @@ const Wrap = styled.div`
 	align-items: center;
 	justify-content: flex-start;
 	align-content: center;
-	margin-top: 50px;
-	margin-bottom: 50px;
-	padding: 0 10px;
+	padding: 50px 10px;
 	.inner {
 		backdrop-filter: blur(5px);
 		max-width: 450px;
