@@ -115,7 +115,6 @@ const UlContainer = styled.ul`
         width: 78%;
         font-size: 16px;
         word-break: break-all;
-        transition: all 0.3s ease-in-out;
         &.editable {
             border-bottom: 1px solid white;
         }
@@ -125,11 +124,12 @@ const UlContainer = styled.ul`
         }
         &.completed {
             text-decoration: line-through;
-            opacity: 0.5;
+            color: #eee3;
+            transition: color 0.3s ease-in-out;
             + .edit {
                 pointer-events: none;
-                opacity: 0.5;
-                
+                color: #eee3;
+                transition: color 0.3s ease-in-out;
             }
         }
     }
@@ -183,7 +183,47 @@ export default function ToDoComponent({getLocalStorageArray}) {
         test.splice(findTaskNumberID, 1)
         setToDoListLocal(test)
 
+    }
+
+    //completed task Task
+    function completedTask(e) {
+        let clickTarget = e.target;
+        let parentID = clickTarget.parentNode.id;
+        let findTaskNumberID = toDoListLocal.findIndex(x => x.date === parentID);
+        let test = [...toDoListLocal]
+
+        if(test[findTaskNumberID].status === 'uncompleted') {
+            test[findTaskNumberID].status = 'completed';
+        } else {
+            test[findTaskNumberID].status = 'uncompleted';
+        }
+        setToDoListLocal(test)
+
+    }
+
+
+    //Edit Task
+    //HAVE TO DOUBLE CHECK THE FUNCTIONALITY OF THIS FUNCTION
+    function editTask(e) {
+        let clickTarget = e.target;
+        let itemTask = clickTarget.previousSibling;
+        let findTaskNumberID = toDoListLocal.findIndex(x => x.item === itemTask.id);
+        let test = [...toDoListLocal];
+        let newValue;
+
+        console.log(itemTask.contentEditable);
+        if (itemTask.contentEditable === 'false') {
+            itemTask.contentEditable = true;
+            itemTask.focus();
+        } else if (itemTask.contentEditable === 'true'){
+            itemTask.contentEditable = false;
+            newValue= itemTask.innerHTML;
+
+            test[findTaskNumberID].item = newValue;
+            setToDoListLocal(test);
+        }
     } 
+    
 
 
 
@@ -193,18 +233,23 @@ export default function ToDoComponent({getLocalStorageArray}) {
 
             <Wrap>
                 <div className='inner'>
-                <form>
-                    <input type="text" ref={inputValueRef} name="toDo" placeholder="Add new task"/>
-                    <button onClick={addItemToList} className="add-btn btn btn-primary" type="button">+</button>
-                </form>
+                    <form>
+                        <input type="text" ref={inputValueRef} name="toDo" placeholder="Add new task"/>
+                        <button onClick={addItemToList} className="add-btn btn btn-primary" type="button">+</button>
+                    </form>
 
                     <UlContainer className="to-do-list">
                         <span className="error">*Please fill the text box above.</span>
                     {
                         toDoListLocal?.map((item) => (
                             <div className="item" key={item.date} id={item.date}>
-                                <li className={item.status}>{item.item}</li>
-                                <span className="edit">
+
+                                {item.status === 'completed'
+                                ? <input type="checkbox" onClick={completedTask} defaultChecked></input>
+                                : <input type="checkbox" onClick={completedTask}></input>}
+
+                                <li className={item.status} id={item.item} contentEditable='false' suppressContentEditableWarning={true}>{item.item}</li>
+                                <span onClick={editTask} className="edit">
                                     <FaRegEdit/>
                                 </span>
                                 <span onClick={deleteTask} className="trash">
