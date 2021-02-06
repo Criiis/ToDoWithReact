@@ -55,6 +55,12 @@ const Wrap = styled.div`
                 &:focus {
                     outline: none;
                 }
+                &.error {
+                    border-bottom: 1px solid #bb7f8b;
+                    &::placeholder {
+                        color: #bb7f8b;
+                    }
+                }
             }
 
 
@@ -89,16 +95,6 @@ const UlContainer = styled.ul`
     margin: 0;
     list-style: none;
     position: relative;
-    .error {
-        font-size: 11px;
-        position: absolute;
-        top: 5px;
-        left: 5px;
-        display: none;
-        &.open {
-            display: block;
-        }
-    }
 .item {
     cursor: pointer;
     display: flex;
@@ -182,21 +178,30 @@ export default function ToDoComponent({getLocalStorageArray}) {
     function addItemToList() {
         const inputValue = inputValueRef.current.value;
         if (inputValue !== '') {
+            inputValueRef.current.classList.remove('error');
             setToDoListLocal(oldArray => [{item: `${inputValue}`, status: "uncompleted", date: `${n}` }, ...oldArray]);
             inputValueRef.current.value = '';
+        } else {
+            inputValueRef.current.classList.add('error');
         }
+    }
+
+    function findItemIndexInArray(target) {
+        let parentID = target.parentNode.id;
+        let findTaskNumberID = toDoListLocal.findIndex(x => x.date === parentID);
+
+        return findTaskNumberID;
     }
 
 
     //delete Task
     function deleteTask(e) {
         let clickTarget = e.target;
-        let parentID = clickTarget.parentNode.id;
-        let findTaskNumberID = toDoListLocal.findIndex(x => x.date === parentID);
+        let itemInArray = findItemIndexInArray(clickTarget);
 
         //very important use 'set' function to update the array
         let test = [...toDoListLocal]
-        test.splice(findTaskNumberID, 1)
+        test.splice(itemInArray, 1)
         setToDoListLocal(test)
 
     }
@@ -204,14 +209,13 @@ export default function ToDoComponent({getLocalStorageArray}) {
     //completed task Task
     function completedTask(e) {
         let clickTarget = e.target;
-        let parentID = clickTarget.parentNode.id;
-        let findTaskNumberID = toDoListLocal.findIndex(x => x.date === parentID);
+        let itemInArray = findItemIndexInArray(clickTarget);
         let test = [...toDoListLocal]
 
-        if(test[findTaskNumberID].status === 'uncompleted') {
-            test[findTaskNumberID].status = 'completed';
+        if(test[itemInArray].status === 'uncompleted') {
+            test[itemInArray].status = 'completed';
         } else {
-            test[findTaskNumberID].status = 'uncompleted';
+            test[itemInArray].status = 'uncompleted';
         }
         setToDoListLocal(test)
 
@@ -223,8 +227,7 @@ export default function ToDoComponent({getLocalStorageArray}) {
     function editTask(e) {
         let clickTarget = e.target;
         let itemTask = clickTarget.previousSibling;
-        let parentID = clickTarget.parentNode.id;
-        let findTaskNumberID = toDoListLocal.findIndex(x => x.date === parentID);
+        let itemInArray = findItemIndexInArray(clickTarget);
         let test = [...toDoListLocal];
         let newValue;
 
@@ -237,7 +240,7 @@ export default function ToDoComponent({getLocalStorageArray}) {
             newValue= itemTask.innerHTML;
             itemTask.classList.remove('editable');
 
-            test[findTaskNumberID].item = newValue;
+            test[itemInArray].item = newValue;
             setToDoListLocal(test);
         }
     } 
@@ -257,7 +260,6 @@ export default function ToDoComponent({getLocalStorageArray}) {
                     </form>
 
                     <UlContainer className="to-do-list">
-                        <span className="error">*Please fill the text box above.</span>
                     {
                         toDoListLocal?.map((item) => (
                             <div className="item" key={item.date} id={item.date}>
